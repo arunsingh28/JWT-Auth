@@ -35,6 +35,7 @@
         if(result.status === 'ok'){
             localStorage.setItem('token',result.data)
             alert('Success')
+            window.location.href = "change.html"
         }else{
             alert(result.error)
         }

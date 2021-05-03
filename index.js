@@ -16,9 +16,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/', express.static(path.join(__dirname + '/static')))
 
 // setup mongodb
-const URI = "mongodb+srv://arun:1234@cluster0.t3qon.mongodb.net/JWT"
 
-mongoose.connect(URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Database is connected'))
     .catch(err => console.log(err))
 
@@ -84,17 +83,23 @@ app.post('/login', async (req, res) => {
 })
 
 
-app.post('/change', async (req, res) => {
-    const { token, newpass } = req.body
+app.post('/change', async(req, res) => {
+    const { token, newpass:plainText } = req.body;
+
+    if(!plainText || typeof plainText !== 'string'){
+        return res.json({status:'error',error:'password not valid'})
+    }
+
     try {
-        const user = jwt.verify(token, JWT_SECRET)
-        const _id = user.id
-        const hashpass = await bcrypt.hash(newpass, 10)
+        const user = jwt.verify(token, process.env.JWT_SECRET)
+        const _id = user.id;
+        const password = await bcrypt.hash(plainText, 10)
         await User.updateOne({ _id }, {
-            $set: { pass: hashpass }
+            $set: { password }
         })
-        res.json({ status: 'ok' })
+        return res.json({ status: 'ok' })
     } catch (error) {
+        console.log(error)
         return res.json({ status: 'error', error: 'Signature error' })
     }
 })

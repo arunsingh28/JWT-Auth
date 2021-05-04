@@ -17,7 +17,7 @@ app.use('/', express.static(path.join(__dirname + '/static')))
 
 // setup mongodb
 
-mongoose.connect(process.env.URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
     .then(() => console.log('Database is connected'))
     .catch(err => console.log(err))
 
@@ -28,6 +28,7 @@ const user = new mongoose.Schema({
     email: { type: String, require: true, unique: true }
 })
 const User = mongoose.model('User', user)
+
 
 
 // register API
@@ -83,11 +84,11 @@ app.post('/login', async (req, res) => {
 })
 
 
-app.post('/change', async(req, res) => {
-    const { token, newpass:plainText } = req.body;
+app.post('/change', async (req, res) => {
+    const { token, newpass: plainText } = req.body;
 
-    if(!plainText || typeof plainText !== 'string'){
-        return res.json({status:'error',error:'password not valid'})
+    if (!plainText || typeof plainText !== 'string') {
+        return res.json({ status: 'error', error: 'password not valid' })
     }
 
     try {
@@ -121,6 +122,14 @@ app.delete('/', (req, res) => {
         .catch(e => console.log(e))
 })
 
+app.get('/all', async(req, res) => {
+    try {
+      const data = await User.find({})
+      return res.json({data})  
+    } catch (error) {
+        console.log(error)
+    }
+})
 
 
 

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search</title>
+</head>
+
+<body>
+    <form id="frm">
+        <input type="text" id="ser">
+    </form>
+    <p id="data"></p>
+</body>
+<script>
+    const q = document.getElementById('ser')
+    const di = document.getElementById('data')
+
+    const serch = async e => {
+        const res = await fetch('/all')
+        const user = await res.json()
+
+        let match = user.data.filter(name => {
+            const regex = new RegExp(`^${e}`, 'gi')
+            return name.email.match(regex)
+        })
+
+        if (e.length === 0) {
+            match = []
+            di.innerHTML = '<p>Search by name of the user</p>'
+        }
+        outputMessage(match)
+    }
+
+    const outputMessage = match => {
+        if(match.length > 0){
+        const html = match.map(data =>
+        ` <div class="card mt-2">
+          <div class="card-body text-capitalize">
+          <span class="font-weight-normal" style="line-height:30px">${data.email}</span>
+          <a href="/friend/${data._id}" class="btn btn-outline-primary float-right"><i class="fas fa-user-plus"></i> Send Request</a>
+          </div>
+          </div>
+        `
+        ).join('')
+        di.innerHTML = html
+        }
+        if(match.length <= 0){
+        di.innerHTML = `<p class="text-center text-danger py-3">no user found </p>`
+    }
+    }
+
+    q.addEventListener('input', () => serch(q.value))
+</script>
+
+</html>
